@@ -51,3 +51,6 @@ TYPE BRO is heavily **inspired by Monkeytype**. It is a tribute to minimalist de
 ## Deployment
 
 This project is optimized for deployment to **Vercel** or **Netlify**. Simply connect your GitHub repository and build using the default Vite settings.
+
+
+## more thigns to add 
