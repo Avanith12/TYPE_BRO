@@ -1,6 +1,8 @@
 # TYPE BRO Typing
 Inspired by [Monkeytype](https://monkeytype.com)
 
+Live at [type-bro-six.vercel.app](https://type-bro-six.vercel.app/)
+
 A high-performance, minimalist, and aesthetic typing application built with React and Vite.
 
 ## How It Works
