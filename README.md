@@ -55,3 +55,6 @@ This project is optimized for deployment to **Vercel** or **Netlify**. Simply co
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+
+## More things to come 
