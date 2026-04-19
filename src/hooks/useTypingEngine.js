@@ -11,6 +11,7 @@ export const useTypingEngine = (initialWords, mode = 'words', timeLimit = 30, wo
     const [status, setStatus] = useState('waiting');
     const [metrics, setMetrics] = useState({ wpm: 0, accuracy: 0, raw: 0, characters: 0, errors: 0 });
     const [chartData, setChartData] = useState([]);
+    const [keyStats, setKeyStats] = useState({});
     const [timeLeft, setTimeLeft] = useState(timeLimit);
 
     const audioCtx = useRef(null);
@@ -91,6 +92,7 @@ export const useTypingEngine = (initialWords, mode = 'words', timeLimit = 30, wo
         setStatus('waiting');
         setMetrics({ wpm: 0, accuracy: 0, raw: 0, characters: 0, errors: 0 });
         setChartData([]);
+        setKeyStats({});
         setTimeLeft(timeLimit);
     }, [timeLimit]);
 
@@ -137,6 +139,21 @@ export const useTypingEngine = (initialWords, mode = 'words', timeLimit = 30, wo
             const nextInput = userInput + e.key;
             setUserInput(nextInput);
 
+            // HEATMAP TRACKING
+            const targetChar = words[currWordIndex][userInput.length]?.toLowerCase();
+            if (targetChar) { // Track everything including punctuation
+                setKeyStats(prev => {
+                    const current = prev[targetChar] || { total: 0, errors: 0 };
+                    return {
+                        ...prev,
+                        [targetChar]: {
+                            total: current.total + 1,
+                            errors: current.errors + (e.key.toLowerCase() === targetChar ? 0 : 1)
+                        }
+                    };
+                });
+            }
+
             // AUTO-FINISH LOGIC:
             // If we are on the last word and the input matches the word exactly
             if (mode === 'words' && currWordIndex === words.length - 1) {
@@ -182,6 +199,7 @@ export const useTypingEngine = (initialWords, mode = 'words', timeLimit = 30, wo
         status,
         metrics,
         chartData,
+        keyStats,
         timeLeft,
         reset
     };

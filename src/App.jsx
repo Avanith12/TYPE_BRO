@@ -3,6 +3,7 @@ import TypingArea from './components/TypingArea';
 import Stats from './components/Stats';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import WpmGraph from './components/WpmGraph';
+import Heatmap from './components/Heatmap';
 import { useTypingEngine } from './hooks/useTypingEngine';
 import { generateWords } from './utils/wordGenerator';
 import './index.css';
@@ -35,6 +36,7 @@ function App() {
     status,
     metrics,
     chartData,
+    keyStats,
     timeLeft,
     reset
   } = useTypingEngine(initialWords, testMode, 30, wordOptions);
@@ -86,6 +88,7 @@ function App() {
         <div className="finished-container">
           <Stats metrics={metrics} status={status} />
           <WpmGraph data={chartData} />
+          <Heatmap keyStats={keyStats} />
           <button className="restart-btn" onClick={handleRestart}>
             Restart (Press Space)
           </button>
