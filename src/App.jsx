@@ -20,8 +20,9 @@ function App() {
   const [caretStyle, setCaretStyle] = useState('smooth');
   const [inMultiplayerMenu, setInMultiplayerMenu] = useState(false);
   const [isRacing, setIsRacing] = useState(false);
+  const [timeLimit, setTimeLimit] = useState(60); // 30, 60, 120
 
-  const wordOptions = { count: 50, textMode, punctuation, numbers };
+  const wordOptions = { count: testMode === 'time' ? 300 : 50, textMode, punctuation, numbers };
   const [initialWords, setInitialWords] = useState(() => generateWords(wordOptions));
 
   const multiplayer = useMultiplayer();
@@ -45,29 +46,38 @@ function App() {
     keyStats,
     timeLeft,
     reset
-  } = useTypingEngine(initialWords, testMode, 30, wordOptions);
+  } = useTypingEngine(initialWords, testMode, timeLimit, wordOptions);
 
-  // If textMode, punctuation, or numbers change, immediately restart the test with new words
+  // If config changes, immediately restart the test with new words
   useEffect(() => {
     const newWords = generateWords(wordOptions);
     setInitialWords(newWords);
     if (reset) reset(newWords);
-  }, [textMode, punctuation, numbers]); // intentional exclusion of `reset` to avoid infinite loops on mount
+  }, [textMode, punctuation, numbers, timeLimit, testMode]); // intentional exclusion of `reset` to avoid infinite loops on mount
 
   // Sync Multiplayer match start
   const triggerMultiplayerStart = () => {
     const raceWords = generateWords(wordOptions);
     setInitialWords(raceWords);
     if (reset) reset(raceWords);
-    multiplayer.sendStartSync({ words: raceWords });
+    multiplayer.sendStartSync({
+      words: raceWords,
+      mode: testMode,
+      timer: timeLimit
+    });
     setIsRacing(true);
   };
 
   // Sync Guest when Host starts
   useEffect(() => {
     if (multiplayer.opponentStartSync) {
-      setInitialWords(multiplayer.opponentStartSync.words);
-      if (reset) reset(multiplayer.opponentStartSync.words);
+      const payload = multiplayer.opponentStartSync;
+
+      if (payload.mode) setTestMode(payload.mode);
+      if (payload.timer) setTimeLimit(payload.timer);
+
+      setInitialWords(payload.words);
+      if (reset) reset(payload.words);
       setIsRacing(true);
     }
   }, [multiplayer.opponentStartSync]);
@@ -97,6 +107,14 @@ function App() {
           <button onClick={() => setZenMode(!zenMode)} className={`mode-btn ${zenMode ? 'active' : ''}`}>zen</button>
           <button onClick={() => setTestMode('words')} className={`mode-btn ${testMode === 'words' ? 'active' : ''}`}>words</button>
           <button onClick={() => setTestMode('time')} className={`mode-btn ${testMode === 'time' ? 'active' : ''}`}>time</button>
+
+          {testMode === 'time' && (
+            <div style={{ display: 'flex', gap: '0.8rem', background: 'var(--sub-alt-color)', padding: '0.2rem 1rem', borderRadius: '4px' }}>
+              <button onClick={() => setTimeLimit(30)} className={`mode-btn ${timeLimit === 30 ? 'active' : ''}`} style={{ padding: 0 }}>30s</button>
+              <button onClick={() => setTimeLimit(60)} className={`mode-btn ${timeLimit === 60 ? 'active' : ''}`} style={{ padding: 0 }}>60s</button>
+              <button onClick={() => setTimeLimit(120)} className={`mode-btn ${timeLimit === 120 ? 'active' : ''}`} style={{ padding: 0 }}>120s</button>
+            </div>
+          )}
 
           <div style={{ width: '1px', background: 'var(--sub-alt-color)', margin: '0 0.5rem' }}></div>
           <button onClick={() => { setInMultiplayerMenu(!inMultiplayerMenu); setIsRacing(false); multiplayer.disconnect(); setZenMode(false); }} className={`mode-btn ${inMultiplayerMenu ? 'active' : ''}`} style={{ color: 'var(--main-color)' }}>multiplayer</button>
