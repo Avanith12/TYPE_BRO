@@ -4,7 +4,9 @@ import Stats from './components/Stats';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import WpmGraph from './components/WpmGraph';
 import Heatmap from './components/Heatmap';
+import Lobby from './components/Lobby';
 import { useTypingEngine } from './hooks/useTypingEngine';
+import { useMultiplayer } from './hooks/useMultiplayer';
 import { generateWords } from './utils/wordGenerator';
 import './index.css';
 
@@ -16,9 +18,12 @@ function App() {
   const [punctuation, setPunctuation] = useState(false);
   const [numbers, setNumbers] = useState(false);
   const [caretStyle, setCaretStyle] = useState('smooth');
+  const [inMultiplayerMenu, setInMultiplayerMenu] = useState(false);
 
   const wordOptions = { count: 50, textMode, punctuation, numbers };
   const [initialWords, setInitialWords] = useState(() => generateWords(wordOptions));
+
+  const multiplayer = useMultiplayer();
 
 
 
@@ -48,6 +53,33 @@ function App() {
     if (reset) reset(newWords);
   }, [textMode, punctuation, numbers]); // intentional exclusion of `reset` to avoid infinite loops on mount
 
+  // Sync Multiplayer match start
+  const triggerMultiplayerStart = () => {
+    const raceWords = generateWords(wordOptions);
+    setInitialWords(raceWords);
+    if (reset) reset(raceWords);
+    multiplayer.sendStartSync({ words: raceWords });
+  };
+
+  // Sync Guest when Host starts
+  useEffect(() => {
+    if (multiplayer.opponentStartSync) {
+      setInitialWords(multiplayer.opponentStartSync.words);
+      if (reset) reset(multiplayer.opponentStartSync.words);
+    }
+  }, [multiplayer.opponentStartSync]);
+
+  // Broadcast typing progress to opponent
+  useEffect(() => {
+    if (inMultiplayerMenu && status === 'typing') {
+      multiplayer.sendProgress({
+        wpm: metrics.wpm,
+        index: currWordIndex,
+        chars: userInput.length
+      });
+    }
+  }, [metrics.wpm, currWordIndex, userInput.length, status, inMultiplayerMenu]);
+
   const handleRestart = () => {
     reset(generateWords(wordOptions));
   };
@@ -62,6 +94,9 @@ function App() {
           <button onClick={() => setZenMode(!zenMode)} className={`mode-btn ${zenMode ? 'active' : ''}`}>zen</button>
           <button onClick={() => setTestMode('words')} className={`mode-btn ${testMode === 'words' ? 'active' : ''}`}>words</button>
           <button onClick={() => setTestMode('time')} className={`mode-btn ${testMode === 'time' ? 'active' : ''}`}>time</button>
+
+          <div style={{ width: '1px', background: 'var(--sub-alt-color)', margin: '0 0.5rem' }}></div>
+          <button onClick={() => { setInMultiplayerMenu(!inMultiplayerMenu); setZenMode(false); }} className={`mode-btn ${inMultiplayerMenu ? 'active' : ''}`} style={{ color: 'var(--main-color)' }}>multiplayer</button>
 
           <div style={{ width: '1px', background: 'var(--sub-alt-color)', margin: '0 0.5rem' }}></div>
 
@@ -84,7 +119,10 @@ function App() {
       )}
 
 
-      {status === 'finished' ? (
+      {/* Main Content Area */}
+      {inMultiplayerMenu && status === 'waiting' ? (
+        <Lobby multiplayer={multiplayer} startMultiplayerTest={triggerMultiplayerStart} />
+      ) : status === 'finished' ? (
         <div className="finished-container">
           <Stats metrics={metrics} status={status} />
           <WpmGraph data={chartData} />
@@ -111,6 +149,7 @@ function App() {
             history={history}
             status={status}
             caretStyle={caretStyle}
+            opponentProgress={inMultiplayerMenu ? multiplayer.opponentData : null}
           />
         </>
       )}
