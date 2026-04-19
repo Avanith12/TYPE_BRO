@@ -3,6 +3,12 @@ Inspired by [Monkeytype](https://monkeytype.com)
 
 Live at [type-bro-six.vercel.app](https://type-bro-six.vercel.app/)
 
+<div align="center">
+  <img src="./typrebro.png" alt="Type Bro App Screenshot" width="800" style="border-radius: 8px; margin-bottom: 2rem;" />
+  <br />
+  <img src="./typing-gif.gif" alt="Type Bro Demo" width="800" style="border-radius: 8px;" />
+</div>
+
 A high-performance, minimalist, and aesthetic typing application built with React and Vite.
 
 ## How It Works
