@@ -129,14 +129,30 @@ h1 {
 }
 
 .caret {
-  width: 2px;
   height: 1.5rem;
   background-color: var(--caret-color);
   position: absolute;
   animation: blink 1s infinite;
+  z-index: 10;
+}
+
+.caret-smooth {
+  width: 2px;
   border-radius: 2px;
   transition: left 0.1s ease, top 0.1s ease;
-  z-index: 10;
+}
+
+.caret-bar {
+  width: 2px;
+  border-radius: 2px;
+  transition: none;
+}
+
+.caret-block {
+  width: 0.8em;
+  opacity: 0.5;
+  border-radius: 0;
+  transition: none;
 }
 
 .typing-container {

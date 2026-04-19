@@ -11,7 +11,15 @@ function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'default');
   const [zenMode, setZenMode] = useState(false);
   const [testMode, setTestMode] = useState('words'); // 'words' or 'time'
-  const [initialWords] = useState(() => generateWords(50));
+  const [textMode, setTextMode] = useState('words'); // 'words', 'code', 'quote'
+  const [punctuation, setPunctuation] = useState(false);
+  const [numbers, setNumbers] = useState(false);
+  const [caretStyle, setCaretStyle] = useState('smooth');
+
+  const wordOptions = { count: 50, textMode, punctuation, numbers };
+  const [initialWords, setInitialWords] = useState(() => generateWords(wordOptions));
+
+
 
   useEffect(() => {
     document.body.setAttribute('data-theme', theme);
@@ -29,10 +37,17 @@ function App() {
     chartData,
     timeLeft,
     reset
-  } = useTypingEngine(initialWords, testMode, 30);
+  } = useTypingEngine(initialWords, testMode, 30, wordOptions);
+
+  // If textMode, punctuation, or numbers change, immediately restart the test with new words
+  useEffect(() => {
+    const newWords = generateWords(wordOptions);
+    setInitialWords(newWords);
+    if (reset) reset(newWords);
+  }, [textMode, punctuation, numbers]); // intentional exclusion of `reset` to avoid infinite loops on mount
 
   const handleRestart = () => {
-    reset(generateWords(50));
+    reset(generateWords(wordOptions));
   };
 
   return (
@@ -41,12 +56,31 @@ function App() {
         <h1 style={{ color: 'var(--sub-color)', fontSize: '1rem', opacity: 0.5 }}>
           TYPE BRO _
         </h1>
-        <div className="mode-toggles" style={{ marginTop: '1rem', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+        <div className="mode-toggles" style={{ marginTop: '1rem', display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
           <button onClick={() => setZenMode(!zenMode)} className={`mode-btn ${zenMode ? 'active' : ''}`}>zen</button>
           <button onClick={() => setTestMode('words')} className={`mode-btn ${testMode === 'words' ? 'active' : ''}`}>words</button>
           <button onClick={() => setTestMode('time')} className={`mode-btn ${testMode === 'time' ? 'active' : ''}`}>time</button>
+
+          <div style={{ width: '1px', background: 'var(--sub-alt-color)', margin: '0 0.5rem' }}></div>
+
+          <button onClick={() => setTextMode('words')} className={`mode-btn ${textMode === 'words' ? 'active' : ''}`}>@</button>
+          <button onClick={() => setTextMode('quote')} className={`mode-btn ${textMode === 'quote' ? 'active' : ''}`}>""</button>
+          <button onClick={() => setTextMode('code')} className={`mode-btn ${textMode === 'code' ? 'active' : ''}`}>{"<>"}</button>
+
+          <div style={{ width: '1px', background: 'var(--sub-alt-color)', margin: '0 0.5rem' }}></div>
+
+          <button onClick={() => setPunctuation(!punctuation)} className={`mode-btn ${punctuation ? 'active' : ''}`}>.,?</button>
+          <button onClick={() => setNumbers(!numbers)} className={`mode-btn ${numbers ? 'active' : ''}`}>123</button>
         </div>
       </header>
+
+      {/* High Score Notification */}
+      {localStorage.getItem('highestWpm') && (
+        <div style={{ textAlign: 'center', color: 'var(--main-color)', fontSize: '0.8rem', opacity: 0.8, marginBottom: '2rem' }}>
+          👑 Personal Best: {localStorage.getItem('highestWpm')} WPM
+        </div>
+      )}
+
 
       {status === 'finished' ? (
         <div className="finished-container">
@@ -73,6 +107,7 @@ function App() {
             currWordIndex={currWordIndex}
             history={history}
             status={status}
+            caretStyle={caretStyle}
           />
         </>
       )}
@@ -80,6 +115,12 @@ function App() {
       <footer style={{ marginTop: '4rem', textAlign: 'center', color: 'var(--sub-alt-color)', fontSize: '0.8rem' }}>
         <p>Type to start • Tab to restart • Space to finish word</p>
         <ThemeSwitcher currentTheme={theme} onThemeChange={setTheme} />
+
+        <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+          <button onClick={() => setCaretStyle('smooth')} className={`mode-btn ${caretStyle === 'smooth' ? 'active' : ''}`}>| smooth</button>
+          <button onClick={() => setCaretStyle('bar')} className={`mode-btn ${caretStyle === 'bar' ? 'active' : ''}`}>| bar</button>
+          <button onClick={() => setCaretStyle('block')} className={`mode-btn ${caretStyle === 'block' ? 'active' : ''}`}>█ block</button>
+        </div>
       </footer>
     </main>
   );

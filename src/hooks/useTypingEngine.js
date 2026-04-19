@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { generateWords } from '../utils/wordGenerator';
 
-export const useTypingEngine = (initialWords, mode = 'words', timeLimit = 30) => {
+export const useTypingEngine = (initialWords, mode = 'words', timeLimit = 30, wordOptions = {}) => {
     const [words, setWords] = useState(initialWords);
     const [userInput, setUserInput] = useState('');
     const [startTime, setStartTime] = useState(null);
@@ -30,24 +31,6 @@ export const useTypingEngine = (initialWords, mode = 'words', timeLimit = 30) =>
             osc.stop(audioCtx.current.currentTime + 0.1);
         } catch (e) { /* ignore audio errors */ }
     }, []);
-
-    const finishTest = useCallback(() => {
-        setEndTime(Date.now());
-        setStatus('finished');
-    }, []);
-
-    const reset = useCallback((newWords) => {
-        setWords(newWords);
-        setUserInput('');
-        setStartTime(null);
-        setEndTime(null);
-        setCurrWordIndex(0);
-        setHistory([]);
-        setStatus('waiting');
-        setMetrics({ wpm: 0, accuracy: 0, raw: 0, characters: 0, errors: 0 });
-        setChartData([]);
-        setTimeLeft(timeLimit);
-    }, [timeLimit]);
 
     const calculateMetrics = useCallback((isFinal = false) => {
         if (!startTime) return null;
@@ -85,18 +68,44 @@ export const useTypingEngine = (initialWords, mode = 'words', timeLimit = 30) =>
         return currentMetrics;
     }, [history, words, userInput, currWordIndex, startTime, endTime]);
 
+    const finishTest = useCallback(() => {
+        setEndTime(Date.now());
+        setStatus('finished');
+
+        const m = calculateMetrics(true);
+        if (m) {
+            const currentHighest = parseInt(localStorage.getItem('highestWpm') || '0', 10);
+            if (m.wpm > currentHighest) {
+                localStorage.setItem('highestWpm', m.wpm.toString());
+            }
+        }
+    }, [calculateMetrics]);
+
+    const reset = useCallback((newWords) => {
+        setWords(newWords);
+        setUserInput('');
+        setStartTime(null);
+        setEndTime(null);
+        setCurrWordIndex(0);
+        setHistory([]);
+        setStatus('waiting');
+        setMetrics({ wpm: 0, accuracy: 0, raw: 0, characters: 0, errors: 0 });
+        setChartData([]);
+        setTimeLeft(timeLimit);
+    }, [timeLimit]);
+
     const handleKeyDown = useCallback((e) => {
         // Global Tab to restart (standard in typing apps)
         if (e.key === 'Tab') {
             e.preventDefault();
-            reset(generateWords(50));
+            reset(generateWords(wordOptions));
             return;
         }
 
         if (status === 'finished') {
             if (e.key === ' ' || e.key === 'Enter') {
                 e.preventDefault();
-                reset(generateWords(50));
+                reset(generateWords(wordOptions));
             }
             return;
         }
@@ -136,7 +145,7 @@ export const useTypingEngine = (initialWords, mode = 'words', timeLimit = 30) =>
                 }
             }
         }
-    }, [status, userInput, words, currWordIndex, playClick, mode, finishTest, reset]);
+    }, [status, userInput, words, currWordIndex, playClick, mode, finishTest, reset, wordOptions]);
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown);

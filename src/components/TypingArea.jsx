@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import Word from './Word';
 
-const TypingArea = ({ words, userInput, currWordIndex, history, status }) => {
+const TypingArea = ({ words, userInput, currWordIndex, history, status, caretStyle = 'smooth' }) => {
     const containerRef = useRef(null);
     const [caretPos, setCaretPos] = useState({ left: 0, top: 0 });
 
@@ -38,7 +38,7 @@ const TypingArea = ({ words, userInput, currWordIndex, history, status }) => {
         <div className="typing-container" ref={containerRef}>
             {status !== 'finished' && (
                 <div
-                    className="caret"
+                    className={`caret caret-${caretStyle}`}
                     style={{
                         left: `${caretPos.left}px`,
                         top: `${caretPos.top}px`,
