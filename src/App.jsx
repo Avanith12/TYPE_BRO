@@ -13,7 +13,7 @@ import './index.css';
 function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'default');
   const [zenMode, setZenMode] = useState(false);
-  const [testMode, setTestMode] = useState('words'); // 'words' or 'time'
+  const [testMode, setTestMode] = useState('time'); // 'words' or 'time'
   const [textMode, setTextMode] = useState('words'); // 'words', 'code', 'quote'
   const [punctuation, setPunctuation] = useState(false);
   const [numbers, setNumbers] = useState(false);
@@ -22,6 +22,8 @@ function App() {
   const [isRacing, setIsRacing] = useState(false);
   const [timeLimit, setTimeLimit] = useState(60); // 30, 60, 120
   const [soundMode, setSoundMode] = useState('mechanical');
+  const [suddenDeath, setSuddenDeath] = useState(false);
+  const [blindMode, setBlindMode] = useState(false);
 
   const wordOptions = { count: testMode === 'time' ? 300 : 50, textMode, punctuation, numbers };
   const [initialWords, setInitialWords] = useState(() => generateWords(wordOptions));
@@ -47,7 +49,7 @@ function App() {
     keyStats,
     timeLeft,
     reset
-  } = useTypingEngine(initialWords, testMode, timeLimit, wordOptions, soundMode);
+  } = useTypingEngine(initialWords, testMode, timeLimit, wordOptions, soundMode, suddenDeath);
 
   // If config changes, immediately restart the test with new words
   useEffect(() => {
@@ -99,7 +101,7 @@ function App() {
   };
 
   return (
-    <main className={zenMode && status === 'typing' ? 'zen-active' : ''}>
+    <main className={`${zenMode && status === 'typing' ? 'zen-active' : ''} ${blindMode && status === 'typing' ? 'blind-active' : ''}`}>
       <header style={{ marginBottom: '2rem', textAlign: 'center', transition: 'opacity 0.3s' }}>
         <h1 style={{ color: 'var(--sub-color)', fontSize: '1rem', opacity: 0.5 }}>
           TYPE BRO _
@@ -153,6 +155,14 @@ function App() {
             Restart (Press Space)
           </button>
         </div>
+      ) : status === 'failed' ? (
+        <div className="failed-container">
+          <h2 style={{ color: 'var(--error-color)', fontSize: '2.5rem', marginBottom: '1rem', letterSpacing: '4px' }}>SUDDEN DEATH</h2>
+          <p style={{ color: 'var(--sub-color)', marginBottom: '2rem' }}>You made a typo. Test failed.</p>
+          <button className="restart-btn" onClick={handleRestart}>
+            Restart (Tab)
+          </button>
+        </div>
       ) : (
         <>
           <div className="stats-wrapper" style={{ opacity: zenMode && status === 'typing' ? 0 : 1 }}>
@@ -191,6 +201,11 @@ function App() {
           <button onClick={() => setSoundMode('mechanical')} className={`mode-btn ${soundMode === 'mechanical' ? 'active' : ''}`}>⌨️ mx switch</button>
           <button onClick={() => setSoundMode('typewriter')} className={`mode-btn ${soundMode === 'typewriter' ? 'active' : ''}`}>📠 typewriter</button>
           <button onClick={() => setSoundMode('digital')} className={`mode-btn ${soundMode === 'digital' ? 'active' : ''}`}>🤖 digital</button>
+
+          <div style={{ width: '1px', background: 'var(--sub-alt-color)', margin: '0 0.5rem' }}></div>
+
+          <button onClick={() => setSuddenDeath(!suddenDeath)} className={`mode-btn ${suddenDeath ? 'active' : ''}`} style={{ color: suddenDeath ? 'var(--error-color)' : '' }}>💀 sudden death</button>
+          <button onClick={() => setBlindMode(!blindMode)} className={`mode-btn ${blindMode ? 'active' : ''}`}>👁️ blind</button>
         </div>
       </footer>
     </main>

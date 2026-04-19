@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { generateWords } from '../utils/wordGenerator';
 
-export const useTypingEngine = (initialWords, mode = 'words', timeLimit = 30, wordOptions = {}, soundMode = 'mechanical') => {
+export const useTypingEngine = (initialWords, mode = 'words', timeLimit = 30, wordOptions = {}, soundMode = 'mechanical', suddenDeath = false) => {
     const [words, setWords] = useState(initialWords);
     const [userInput, setUserInput] = useState('');
     const [startTime, setStartTime] = useState(null);
@@ -127,8 +127,8 @@ export const useTypingEngine = (initialWords, mode = 'words', timeLimit = 30, wo
             return;
         }
 
-        if (status === 'finished') {
-            if (e.key === ' ' || e.key === 'Enter') {
+        if (status === 'finished' || status === 'failed') {
+            if (e.key === 'Enter') {
                 e.preventDefault();
                 reset(generateWords(wordOptions));
             }
@@ -138,6 +138,11 @@ export const useTypingEngine = (initialWords, mode = 'words', timeLimit = 30, wo
         if (e.key.length === 1 || e.key === 'Backspace' || e.key === ' ') {
             const isError = e.key.length === 1 && e.key !== words[currWordIndex]?.[userInput.length];
             playClick(isError);
+
+            if (isError && suddenDeath) {
+                setStatus('failed');
+                return;
+            }
         }
 
         if (status === 'waiting' && e.key.length === 1) {
@@ -201,15 +206,13 @@ export const useTypingEngine = (initialWords, mode = 'words', timeLimit = 30, wo
                     setChartData(prev => [...prev, { wpm: m.wpm, raw: m.raw }]);
                 }
 
-                if (mode === 'time') {
-                    setTimeLeft(prev => {
-                        if (prev <= 1) {
-                            finishTest();
-                            return 0;
-                        }
-                        return prev - 1;
-                    });
-                }
+                setTimeLeft(prev => {
+                    if (prev <= 1) {
+                        finishTest();
+                        return 0;
+                    }
+                    return prev - 1;
+                });
             }, 1000);
             return () => clearInterval(interval);
         }
