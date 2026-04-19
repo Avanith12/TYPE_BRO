@@ -19,6 +19,7 @@ function App() {
   const [numbers, setNumbers] = useState(false);
   const [caretStyle, setCaretStyle] = useState('smooth');
   const [inMultiplayerMenu, setInMultiplayerMenu] = useState(false);
+  const [isRacing, setIsRacing] = useState(false);
 
   const wordOptions = { count: 50, textMode, punctuation, numbers };
   const [initialWords, setInitialWords] = useState(() => generateWords(wordOptions));
@@ -59,6 +60,7 @@ function App() {
     setInitialWords(raceWords);
     if (reset) reset(raceWords);
     multiplayer.sendStartSync({ words: raceWords });
+    setIsRacing(true);
   };
 
   // Sync Guest when Host starts
@@ -66,6 +68,7 @@ function App() {
     if (multiplayer.opponentStartSync) {
       setInitialWords(multiplayer.opponentStartSync.words);
       if (reset) reset(multiplayer.opponentStartSync.words);
+      setIsRacing(true);
     }
   }, [multiplayer.opponentStartSync]);
 
@@ -96,7 +99,7 @@ function App() {
           <button onClick={() => setTestMode('time')} className={`mode-btn ${testMode === 'time' ? 'active' : ''}`}>time</button>
 
           <div style={{ width: '1px', background: 'var(--sub-alt-color)', margin: '0 0.5rem' }}></div>
-          <button onClick={() => { setInMultiplayerMenu(!inMultiplayerMenu); setZenMode(false); }} className={`mode-btn ${inMultiplayerMenu ? 'active' : ''}`} style={{ color: 'var(--main-color)' }}>multiplayer</button>
+          <button onClick={() => { setInMultiplayerMenu(!inMultiplayerMenu); setIsRacing(false); multiplayer.disconnect(); setZenMode(false); }} className={`mode-btn ${inMultiplayerMenu ? 'active' : ''}`} style={{ color: 'var(--main-color)' }}>multiplayer</button>
 
           <div style={{ width: '1px', background: 'var(--sub-alt-color)', margin: '0 0.5rem' }}></div>
 
@@ -120,7 +123,7 @@ function App() {
 
 
       {/* Main Content Area */}
-      {inMultiplayerMenu && status === 'waiting' ? (
+      {inMultiplayerMenu && !isRacing && status === 'waiting' ? (
         <Lobby multiplayer={multiplayer} startMultiplayerTest={triggerMultiplayerStart} />
       ) : status === 'finished' ? (
         <div className="finished-container">

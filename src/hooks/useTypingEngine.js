@@ -97,6 +97,8 @@ export const useTypingEngine = (initialWords, mode = 'words', timeLimit = 30, wo
     }, [timeLimit]);
 
     const handleKeyDown = useCallback((e) => {
+        if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return;
+
         // Global Tab to restart (standard in typing apps)
         if (e.key === 'Tab') {
             e.preventDefault();
