@@ -21,6 +21,7 @@ function App() {
   const [inMultiplayerMenu, setInMultiplayerMenu] = useState(false);
   const [isRacing, setIsRacing] = useState(false);
   const [timeLimit, setTimeLimit] = useState(60); // 30, 60, 120
+  const [soundMode, setSoundMode] = useState('mechanical');
 
   const wordOptions = { count: testMode === 'time' ? 300 : 50, textMode, punctuation, numbers };
   const [initialWords, setInitialWords] = useState(() => generateWords(wordOptions));
@@ -46,7 +47,7 @@ function App() {
     keyStats,
     timeLeft,
     reset
-  } = useTypingEngine(initialWords, testMode, timeLimit, wordOptions);
+  } = useTypingEngine(initialWords, testMode, timeLimit, wordOptions, soundMode);
 
   // If config changes, immediately restart the test with new words
   useEffect(() => {
@@ -183,6 +184,13 @@ function App() {
           <button onClick={() => setCaretStyle('smooth')} className={`mode-btn ${caretStyle === 'smooth' ? 'active' : ''}`}>| smooth</button>
           <button onClick={() => setCaretStyle('bar')} className={`mode-btn ${caretStyle === 'bar' ? 'active' : ''}`}>| bar</button>
           <button onClick={() => setCaretStyle('block')} className={`mode-btn ${caretStyle === 'block' ? 'active' : ''}`}>█ block</button>
+
+          <div style={{ width: '1px', background: 'var(--sub-alt-color)', margin: '0 0.5rem' }}></div>
+
+          <button onClick={() => setSoundMode('off')} className={`mode-btn ${soundMode === 'off' ? 'active' : ''}`}>🔇 off</button>
+          <button onClick={() => setSoundMode('mechanical')} className={`mode-btn ${soundMode === 'mechanical' ? 'active' : ''}`}>⌨️ mx switch</button>
+          <button onClick={() => setSoundMode('typewriter')} className={`mode-btn ${soundMode === 'typewriter' ? 'active' : ''}`}>📠 typewriter</button>
+          <button onClick={() => setSoundMode('digital')} className={`mode-btn ${soundMode === 'digital' ? 'active' : ''}`}>🤖 digital</button>
         </div>
       </footer>
     </main>

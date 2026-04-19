@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { generateWords } from '../utils/wordGenerator';
 
-export const useTypingEngine = (initialWords, mode = 'words', timeLimit = 30, wordOptions = {}) => {
+export const useTypingEngine = (initialWords, mode = 'words', timeLimit = 30, wordOptions = {}, soundMode = 'mechanical') => {
     const [words, setWords] = useState(initialWords);
     const [userInput, setUserInput] = useState('');
     const [startTime, setStartTime] = useState(null);
@@ -15,23 +15,44 @@ export const useTypingEngine = (initialWords, mode = 'words', timeLimit = 30, wo
     const [timeLeft, setTimeLeft] = useState(timeLimit);
 
     const audioCtx = useRef(null);
-    const playClick = useCallback(() => {
+    const playClick = useCallback((isError = false) => {
+        if (soundMode === 'off') return;
         try {
             if (!audioCtx.current) audioCtx.current = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.current.state === 'suspended') audioCtx.current.resume();
             const osc = audioCtx.current.createOscillator();
             const gain = audioCtx.current.createGain();
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(150, audioCtx.current.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(40, audioCtx.current.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.05, audioCtx.current.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.current.currentTime + 0.1);
+
+            if (soundMode === 'mechanical') {
+                osc.type = isError ? 'triangle' : 'sine';
+                const baseFreq = isError ? 150 : 300;
+                osc.frequency.setValueAtTime(baseFreq + (Math.random() * 50 - 25), audioCtx.current.currentTime);
+                gain.gain.setValueAtTime(0, audioCtx.current.currentTime);
+                gain.gain.linearRampToValueAtTime(0.1, audioCtx.current.currentTime + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.current.currentTime + 0.05);
+            } else if (soundMode === 'typewriter') {
+                osc.type = isError ? 'triangle' : 'square';
+                const baseFreq = isError ? 300 : 800;
+                osc.frequency.setValueAtTime(baseFreq + (Math.random() * 100 - 50), audioCtx.current.currentTime);
+                gain.gain.setValueAtTime(0, audioCtx.current.currentTime);
+                gain.gain.linearRampToValueAtTime(0.05, audioCtx.current.currentTime + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.current.currentTime + 0.03);
+            } else {
+                // digital
+                osc.type = isError ? 'sawtooth' : 'triangle';
+                const baseFreq = isError ? 200 : 600;
+                osc.frequency.setValueAtTime(baseFreq, audioCtx.current.currentTime);
+                gain.gain.setValueAtTime(0, audioCtx.current.currentTime);
+                gain.gain.linearRampToValueAtTime(0.1, audioCtx.current.currentTime + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.current.currentTime + 0.1);
+            }
+
             osc.connect(gain);
             gain.connect(audioCtx.current.destination);
             osc.start();
             osc.stop(audioCtx.current.currentTime + 0.1);
         } catch (e) { /* ignore audio errors */ }
-    }, []);
+    }, [soundMode]);
 
     const calculateMetrics = useCallback((isFinal = false) => {
         if (!startTime) return null;
@@ -115,7 +136,8 @@ export const useTypingEngine = (initialWords, mode = 'words', timeLimit = 30, wo
         }
 
         if (e.key.length === 1 || e.key === 'Backspace' || e.key === ' ') {
-            playClick();
+            const isError = e.key.length === 1 && e.key !== words[currWordIndex]?.[userInput.length];
+            playClick(isError);
         }
 
         if (status === 'waiting' && e.key.length === 1) {
