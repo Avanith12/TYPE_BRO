@@ -1,4 +1,4 @@
-# TYPE BRO Typing
+# TYPE BRO _
 Inspired by [Monkeytype](https://monkeytype.com)
 
 Live at [type-bro-six.vercel.app](https://type-bro-six.vercel.app/)
@@ -11,54 +11,54 @@ Live at [type-bro-six.vercel.app](https://type-bro-six.vercel.app/)
 
 A high-performance, minimalist, and aesthetic typing application built with React and Vite.
 
-## How It Works
+## Comprehensive Features
 
-**TYPE BRO** is designed with a focus on precision and low-latency interaction. Here's a deep dive into the engine:
+### 1. WebRTC Serverless Multiplayer
+Type Bro supports real-time peer-to-peer racing without a centralized database. 
+- **The Matchmaking Lobby**: A host can create a private room and generate a direct 4-digit code. Guests can enter this code to securely connect their client directly to the host's client.
+- **Synchronized Rulesets**: When the host initiates the test, the exact Word Seed, Target Time Limit, and active Text Options (Quotes, Code, Punctuation) are sent across the connection to ensure absolute symmetry.
+- **Ghost Caret Tracking**: Your opponent's exact progress is transmitted every 100 milliseconds via WebRTC data channels, rendering as a translucent 'Ghost Caret' gliding across your screen alongside their live WPM metric.
 
-### 1. Dynamic Word Selection
-The text you type isn't hardcoded. It is generated on-the-fly:
-- **The Pool**: We maintain a collection of 100 high-frequency English words in `src/utils/wordGenerator.js`.
-- **Randomization**: Every time you start a test, the app "rolls a dice" 50 times to pick a random sequence from this pool. This ensures that no two tests are exactly the same.
+### 2. Deep Metrics and Keyboard Heatmap Analytics
+- **Industry-Standard Computing**: WPM is strictly calculated as `(Correct Characters / 5) / Time`, normalizing output speeds across dense literature quoting and sparse coding syntax. 
+- **Smoothed SVG Graphing**: Upon test completion, users receive a Catmull-Rom smoothed data visualization mapping both their WPM and Raw Keystrokes second-by-second.
+- **The QWERTY Heatmap**: The engine tracks the failure rate of every individual character pressed. The final results screen generates a physical, color-coded map of your keyboard, highlighting the keys you struggled with the most to focus your training.
 
-### 2. Reactive Typing Engine
-The core "loop" of the app runs on a highly optimized React state system:
-- **Event Listeners**: We use global `keydown` listeners to capture input the millisecond a key is pressed.
-- **State Sync**: As you type, the app instantly compares your `userInput` state against the `targetWord`.
-- **Real-time Feedback**: Logic in the `TypingArea` component calculates character states (correct, incorrect, extra) and applies the theme-specific CSS variables instantly.
+### 3. Dynamic Text Modes and Modifiers
+Type Bro allows extreme flexibility in simulating real-world scenarios:
+- **Standard Words (`@`)**: A randomized sequence selected from a pool of 100 high-frequency English vocabulary words.
+- **Literature Quotes (`""`)**: Type out renowned sentences and lengthy dialog taken directly from famous books and movies.
+- **JavaScript Code (`<>`)**: Practice programming speed by typing raw syntax, reserved keywords, and camelCase functions.
+- **Punctuation (`.,?`)**: Dynamically inject commas, periods, and question marks into the text feed randomly.
+- **Numbers (`123`)**: Layer digits seamlessly into the text sequence.
 
-### 3. High-Precision Metrics
-We calculate performance metrics every second using industry-standard formulas:
-- **WPM (Words Per Minute)**: Computed as `(Correct Characters / 5) / Time`. We treat every 5 characters as one "word" to normalize for word length.
-- **Accuracy**: The percentage of correctly typed characters vs. total keystrokes.
-- **Raw Speed**: Every single keystroke is tracked, providing a measure of pure motor speed regardless of errors.
+### 4. Advanced Time Clocks and Limits
+- **Words Mode**: A fixed-length sprint where the test naturally concludes after the 50th word is completely and accurately typed.
+- **Time Mode**: A flexible countdown system allowing options of **30s**, **60s**, or **120s**. Upon selection, the typing engine dynamically inflates the active word bank from 50 words to over 300 words to guarantee the user does not run out of text mid-sprint.
 
-### 4. Advanced Analytics
-After the test, we render a **Catmull-Rom smoothed SVG graph**. This visualization plots your WPM and Raw speed second-by-second, allowing you to see exactly where you lost momentum or encountered high-difficulty word sequences.
+### 5. UI Customization and Aesthetics
+- **Personal Best Persistence**: The engine saves and protects your highest WPM in local browser storage, rendering a minimalist 'Personal Best' notification.
+- **Caret Profiles**: Customize the cursor behavior. Choose between `smooth` (animated gliding), `bar` (rigid blinking), or `block` (a thick styling resembling terminal interfaces).
+- **7 Premium Themes**: Choose from carefully curated color palettes including Nord, Hacker, Serika Dark, Neon, Aether, and Coder.
+- **Zen Mode**: A focus-based layout that gradually fades out all non-essential UI, buttons, and navigation elements while the user is actively typing.
 
-## Features
+## Architecture Documentation
 
-- **7 Premium Themes**: Switch between Neon, Hacker, Coder, Nord, and more.
-- **Mechanical Sound Engine**: Immersive audio feedback using the Web Audio API.
-- **Zen Mode**: A distraction-free mode that fades out UI elements while typing.
-- **Mode Toggles**: Support for both "Word Count" and "Timed" sprint modes.
-
-## Credits
-
-TYPE BRO is heavily **inspired by Monkeytype**. It is a tribute to minimalist design and a study in building high-performance web interfaces.
-
----
+**TYPE BRO _** is built purely on an optimized React state loop to guarantee low-latency processing without rendering lag.
+- **Event Interception**: A centralized global `keydown` event listener snatches inputs globally rather than relying on standard DOM `<input>` structures. This allows maximum custom control over backspacing, word jumping, and invalid keystrokes.
+- **PeerJS Integration**: We leverage the PeerJS library to handle the WebRTC handshake across public STUN/TURN servers. Once the initial IP address is exchanged, all data flows entirely peer-to-peer.
+- **Vite & Rollup**: The local development server and production builds are fully bundled using Vite, resulting in a sub-1-second hot reload and an ultra-lightweight deployment footprint.
 
 ## Getting Started
 
-1. Clone the repository.
-2. Run `npm install`.
-3. Start the dev server with `npm run dev`.
+1. Clone the repository: `git clone https://github.com/Avanith12/TYPE_BRO.git`
+2. Install dependencies via `npm install`
+3. Start the dev server via `npm run dev`
 
 ## Deployment
 
-This project is optimized for deployment to **Vercel** or **Netlify**. Simply connect your GitHub repository and build using the default Vite settings.
+Because Type Bro heavily leverages browser internals and WebRTC for its backend features, the repository is inherently a static application wrapper. You can deploy it seamlessly on Vercel, Netlify, or GitHub Pages without configuring databases, serverless functions, or API keys.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
+This project is licensed under the MIT License - see the LICENSE file for details.
