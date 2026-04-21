@@ -64,4 +64,3 @@ Because Type Bro heavily leverages browser internals and WebRTC for its backend 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 ### Thanks For Stopping Byyyy
-check the multiplater 
